@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Space Explorer — NASA-Inspired</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+         :root {
+            --bg: #050510;
+            --card: rgba(255, 255, 255, .08);
+            --glass: rgba(255, 255, 255, .06);
+            --txt: #eaf2ff;
+            --accent: #00d9ff;
+            --gold: #ffd166;
+            --muted: #b6c2d6;
+            --glow: 0 0 20px rgba(0, 217, 255, .35), 0 0 40px rgba(0, 217, 255, .2);
+            --radius: 18px;
+        }
+        
+        * {
+            box-sizing: border-box
+        }
+        
+        html,
+        body {
+            height: 100%
+        }
+        
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--txt);
+            font-family: Inter, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+            overflow-x: hidden;
+        }
+        /* ===== Background (Canvas stars + glitter overlay) ===== */
+        
+        #starfield {
+            position: fixed;
+            inset: 0;
+            z-index: -3;
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .twinkle,
+        .glitter {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            pointer-events: none;
+            mix-blend-mode: screen;
+            background-image: radial-gradient(2px 2px at 20% 30%, rgba(255, 255, 255, .35), transparent 60%), radial-gradient(1.5px 1.5px at 70% 60%, rgba(0, 217, 255, .35), transparent 60%), radial-gradient(1.2px 1.2px at 40% 80%, rgba(255, 209, 102, .35), transparent 60%);
+            background-repeat: repeat;
+            background-size: 800px 600px, 900px 700px, 1000px 800px;
+            animation: twinkle 22s linear infinite;
+        }
+        
+        .glitter {
+            z-index: -1;
+            background-image: radial-gradient(1px 1px at 10% 10%, rgba(255, 255, 255, .25), transparent 55%), radial-gradient(1px 1px at 90% 35%, rgba(0, 217, 255, .18), transparent 55%), radial-gradient(1px 1px at 50% 90%, rgba(255, 209, 102, .18), transparent 55%);
+            background-size: 700px 500px, 800px 600px, 900px 700px;
+            animation: glitter 30s linear infinite reverse;
+        }
+        
+        @keyframes twinkle {
+            0% {
+                transform: translate3d(0, 0, 0)
+            }
+            100% {
+                transform: translate3d(-120px, 80px, 0)
+            }
+        }
+        
+        @keyframes glitter {
+            0% {
+                transform: translate3d(0, 0, 0)
+            }
+            100% {
+                transform: translate3d(160px, -120px, 0)
+            }
+        }
+        /* ===== Header / Nav ===== */
+        
+        header {
+            position: sticky;
+            top: 0;
+            backdrop-filter: saturate(150%) blur(10px);
+            background: linear-gradient(180deg, rgba(5, 5, 16, .8), rgba(5, 5, 16, .35) 80%, transparent);
+            z-index: 10;
+            border-bottom: 1px solid rgba(255, 255, 255, .08);
+        }
+        
+        .wrap {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 18px 20px;
+        }
+        
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        
+        .logo {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #29f, #09f 40%, #007 70%);
+            box-shadow: var(--glow);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .logo:after {
+            content: "";
+            position: absolute;
+            inset: -30%;
+            background: conic-gradient(from 0deg, rgba(255, 255, 255, .05), transparent 20% 40%, rgba(255, 255, 255, .06) 60%, transparent 80% 100%);
+            animation: spin 12s linear infinite;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+        
+        .title {
+            font-family: Orbitron, sans-serif;
+            letter-spacing: .5px;
+        }
+        
+        .title h1 {
+            font-size: clamp(20px, 3vw, 28px);
+            margin: 0
+        }
+        
+        .title small {
+            color: var(--muted)
+        }
+        
+        nav {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        nav a {
+            text-decoration: none;
+            color: var(--txt);
+            border: 1px solid rgba(255, 255, 255, .12);
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .05);
+        }
+        
+        nav a:hover {
+            box-shadow: var(--glow);
+            border-color: rgba(0, 217, 255, .45)
+        }
+        /* ===== Hero Orbit ===== */
+        
+        .hero {
+            display: grid;
+            grid-template-columns: 1.2fr .8fr;
+            gap: 24px;
+            align-items: center;
+            padding: 24px 20px 10px;
+        }
+        
+        @media (max-width:960px) {
+            .hero {
+                grid-template-columns: 1fr
+            }
+        }
+        
+        .hero h2 {
+            font-family: Orbitron;
+            font-size: clamp(24px, 4vw, 40px);
+            margin: 0 0 10px;
+            color: #e9f7ff;
+            text-shadow: 0 0 10px rgba(0, 217, 255, .25);
+        }
+        
+        .hero p {
+            color: var(--muted);
+            margin: 0 0 12px
+        }
+        
+        .cta {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap
+        }
+        
+        .btn {
+            border: none;
+            border-radius: 12px;
+            padding: 10px 14px;
+            cursor: pointer;
+            font-weight: 700;
+            color: #04121a;
+            background: linear-gradient(90deg, #00e2ff, #67fff7);
+            box-shadow: var(--glow);
+        }
+        
+        .btn.ghost {
+            background: transparent;
+            color: #d9efff;
+            border: 1px solid rgba(255, 255, 255, .14);
+        }
+        
+        .orbit-wrap {
+            position: relative;
+            aspect-ratio: 1/1;
+            width: min(520px, 92vw);
+            margin-inline: auto;
+            border-radius: 50%;
+            background: radial-gradient(circle at 50% 50%, rgba(0, 30, 60, .6), rgba(0, 0, 0, .2) 60%, transparent 61%);
+        }
+        /* Earth */
+        
+        .earth {
+            position: absolute;
+            width: 110px;
+            height: 110px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #9be7ff, #0662cc 62%, #022c55 70%), radial-gradient(50px 50px at 60% 40%, rgba(45, 200, 110, .9), transparent 60%), radial-gradient(36px 36px at 30% 70%, rgba(50, 170, 240, .85), transparent 60%);
+            box-shadow: 0 0 0 8px rgba(255, 255, 255, .05), 0 0 50px rgba(0, 217, 255, .35) inset;
+        }
+        /* Orbit ring + satellite */
+        
+        .orbit {
+            position: absolute;
+            inset: 10px;
+            border-radius: 50%;
+            border: 1px dashed rgba(255, 255, 255, .25);
+            animation: orbitSpin 18s linear infinite;
+        }
+        
+        @keyframes orbitSpin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+        
+        .sat {
+            position: absolute;
+            width: 36px;
+            height: 36px;
+            left: 50%;
+            top: -6px;
+            transform: translateX(-50%);
+        }
+        
+        .sat svg {
+            width: 36px;
+            height: 36px;
+            filter: drop-shadow(0 0 6px rgba(0, 217, 255, .6));
+        }
+        /* ===== Utility / Sections ===== */
+        
+        section {
+            padding: 28px 20px
+        }
+        
+        .section-title {
+            font-family: Orbitron;
+            font-size: clamp(18px, 3vw, 26px);
+            margin: 0 0 14px;
+            color: var(--gold);
+        }
+        
+        .subtle {
+            color: var(--muted)
+        }
+        /* Search bar */
+        
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin: 8px 0 18px;
+        }
+        
+        .input {
+            flex: 1 1 280px;
+            border: 1px solid rgba(255, 255, 255, .12);
+            border-radius: 12px;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, .06);
+            color: var(--txt);
+        }
+        /* Cards */
+        
+        .grid {
+            display: grid;
+            gap: 14px;
+            grid-template-columns: repeat(12, 1fr);
+        }
+        
+        .planet-card,
+        .panel {
+            grid-column: span 6;
+            min-width: 0;
+            background: var(--card);
+            border: 1px solid rgba(255, 255, 255, .12);
+            border-radius: var(--radius);
+            padding: 14px;
+            backdrop-filter: blur(8px) saturate(120%);
+            transition: transform .25s ease, box-shadow .25s ease;
+        }
+        
+        .planet-card:hover,
+        .panel:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--glow)
+        }
+        
+        @media (max-width:900px) {
+            .planet-card,
+            .panel {
+                grid-column: span 12
+            }
+        }
+        
+        .planet-head {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .planet-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            box-shadow: inset 0 0 18px rgba(0, 0, 0, .45), 0 0 18px rgba(0, 217, 255, .15);
+            flex: 0 0 52px;
+        }
+        
+        .planet-name {
+            font-weight: 800
+        }
+        
+        .pill {
+            font-size: 12px;
+            padding: 4px 8px;
+            border: 1px solid rgba(255, 255, 255, .18);
+            border-radius: 999px;
+            color: #d9f9ff;
+            background: rgba(255, 255, 255, .05)
+        }
+        
+        .kv {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 8px;
+            font-size: 14px;
+            color: #dbe7ff;
+        }
+        
+        .kv div {
+            background: var(--glass);
+            border: 1px solid rgba(255, 255, 255, .08);
+            padding: 8px;
+            border-radius: 12px
+        }
+        
+        .kv b {
+            display: block;
+            color: #a9c6ff;
+            font-weight: 600
+        }
+        /* Missions panels */
+        
+        .panel h3 {
+            margin: 0 0 10px
+        }
+        
+        ul.clean {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            gap: 8px
+        }
+        
+        .mission {
+            background: var(--glass);
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 12px;
+            padding: 10px;
+        }
+        
+        .mission b {
+            color: #bfe7ff
+        }
+        /* Modal */
+        
+        dialog {
+            border: none;
+            border-radius: 18px;
+            padding: 0;
+            width: min(720px, 92vw);
+            color: var(--txt);
+            background: linear-gradient(180deg, rgba(18, 30, 50, .95), rgba(5, 5, 16, .92));
+            box-shadow: var(--glow);
+        }
+        
+        dialog::backdrop {
+            background: rgba(2, 6, 14, .6);
+            backdrop-filter: blur(3px)
+        }
+        
+        .modal-head {
+            padding: 16px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, .12);
+            display: flex;
+            justify-content: space-between;
+            align-items: center
+        }
+        
+        .modal-body {
+            padding: 16px 18px
+        }
+        
+        .close {
+            background: transparent;
+            color: #cfeaff;
+            border: 1px solid rgba(255, 255, 255, .18);
+            border-radius: 10px;
+            padding: 6px 10px;
+            cursor: pointer
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+            font-size: 14px;
+        }
+        
+        .table td,
+        .table th {
+            padding: 10px 12px;
+            text-align: left
+        }
+        
+        .table tr {
+            background: var(--glass);
+            border: 1px solid rgba(255, 255, 255, .1)
+        }
+        
+        .table tr th {
+            color: #9fdfff
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="starfield"></canvas>
+    <div class="twinkle"></div>
+    <div class="glitter"></div>
+
+    <header>
+        <div class="wrap">
+            <div class="brand">
+                <div class="logo" aria-hidden="true"></div>
+                <div class="title">
+                    <h1>SPACE EXPLORER</h1>
+                    <small>Planets • Missions • The Universe</small>
+                </div>
+            </div>
+            <nav>
+                <a href="#planets">Planets</a>
+                <a href="#missions">Missions</a>
+                <a href="#universe">Universe 101</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero wrap" aria-label="Intro">
+        <div>
+            <h2>Explore worlds, track missions, and orbit through data.</h2>
+            <p class="subtle">A NASA-inspired front-end experience with a dynamic starfield, animated satellite, interactive planet cards, and curated mission timelines. All in a single HTML file—no backend required.</p>
+            <div class="cta">
+                <a class="btn" href="#planets">Start Exploring</a>
+                <a class="btn ghost" href="#missions">See Missions</a>
+            </div>
+        </div>
+        <div class="orbit-wrap" aria-label="Animated orbit">
+            <div class="earth" title="Earth"></div>
+            <div class="orbit">
+                <div class="sat" title="Satellite (ISS)">
+                    <!-- Simple inline SVG satellite -->
+                    <svg viewBox="0 0 64 64" aria-hidden="true">
+          <g>
+            <rect x="28" y="24" width="8" height="16" rx="2" fill="#bfe7ff"/>
+            <rect x="14" y="26" width="12" height="12" rx="2" fill="#8bd2ff"/>
+            <rect x="38" y="26" width="12" height="12" rx="2" fill="#8bd2ff"/>
+            <rect x="8"  y="23" width="4"  height="18" rx="1" fill="#73c7ff"/>
+            <rect x="52" y="23" width="4"  height="18" rx="1" fill="#73c7ff"/>
+            <rect x="24" y="30" width="16" height="4"  rx="2" fill="#c3f2ff"/>
+            <circle cx="32" cy="32" r="2" fill="#004c8f"/>
+          </g>
+        </svg>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="planets" class="wrap">
+        <h3 class="section-title">Planets of the Solar System</h3>
+        <div class="toolbar">
+            <input id="planetSearch" class="input" placeholder="Search planets, e.g., 'Mars' or 'gas giant'…" />
+            <select id="typeFilter" class="input" style="flex:0 0 220px">
+      <option value="">All types</option>
+      <option value="terrestrial">Terrestrial</option>
+      <option value="gas giant">Gas Giant</option>
+      <option value="ice giant">Ice Giant</option>
+    </select>
+        </div>
+        <div id="planetGrid" class="grid" role="list"></div>
+    </section>
+
+    <section id="missions" class="wrap">
+        <h3 class="section-title">Space Missions</h3>
+        <p class="subtle">Highlights of historic missions and notable upcoming missions relevant to planets and major targets.</p>
+        <div class="grid">
+            <div class="panel" style="grid-column:span 6">
+                <h3>Past Missions</h3>
+                <ul id="pastList" class="clean"></ul>
+            </div>
+            <div class="panel" style="grid-column:span 6">
+                <h3>Upcoming / Planned</h3>
+                <ul id="upcomingList" class="clean"></ul>
+            </div>
+        </div>
+    </section>
+
+    <section id="universe" class="wrap">
+        <h3 class="section-title">Universe 101 (Concise Facts)</h3>
+        <div class="grid">
+            <div class="panel">
+                <h3>Scales & Distances</h3>
+                <ul class="clean">
+                    <li class="mission"><b>1 AU</b> ≈ 149,597,870 km (mean Earth–Sun distance).</li>
+                    <li class="mission"><b>Light-year</b> ≈ 9.461×10<sup>12</sup> km (distance light travels in a year).</li>
+                    <li class="mission"><b>Milky Way diameter</b> ~ 100,000 light-years (order of magnitude).</li>
+                </ul>
+            </div>
+            <div class="panel">
+                <h3>Cosmic Inventory</h3>
+                <ul class="clean">
+                    <li class="mission">8 major planets, 5 recognized dwarf planets (e.g., Pluto, Eris, Haumea, Makemake, Ceres).</li>
+                    <li class="mission">Thousands of known exoplanets across the galaxy (growing rapidly via missions like Kepler & TESS).</li>
+                    <li class="mission">Small bodies: asteroids (belt & near-Earth), comets, KBOs in the Kuiper Belt.</li>
+                </ul>
+            </div>
+        </div>
+        <p class="subtle" style="margin-top:10px">Note: Mission schedules can change. Values are standard reference figures (rounded) for a fast, offline demo.</p>
+    </section>
+
+    <footer class="wrap" style="padding-bottom:40px">
+        <p class="subtle">Made with ❤️ — NASA-inspired educational demo. Single-file build.</p>
+    </footer>
+
+    <!-- ===== Modal for planet details ===== -->
+    <dialog id="planetModal">
+        <div class="modal-head">
+            <strong id="modalTitle">Planet</strong>
+            <button class="close" onclick="document.getElementById('planetModal').close()">Close</button>
+        </div>
+        <div class="modal-body">
+            <table class="table" id="modalTable" aria-describedby="modalTitle"></table>
+            <div style="margin-top:10px">
+                <span class="pill" id="modalType"></span>
+            </div>
+            <div style="margin-top:14px">
+                <h4>Notable Missions</h4>
+                <ul id="modalMissions" class="clean"></ul>
+            </div>
+        </div>
+    </dialog>
+
+    <script>
+        /* =========================================================
+           DATA (rounded reference figures; suitable for offline demo)
+           ========================================================= */
+        const PLANETS = [{
+            id: "mercury",
+            name: "Mercury",
+            type: "terrestrial",
+            colorStops: ["#b1b1b1", "#6f6f6f"], // for icon
+            distance_au: 0.387,
+            distance_km: 57900000,
+            diameter_km: 4879,
+            mass_kg: "3.30×10^23",
+            gravity_mps2: 3.7,
+            day_hours: 1407.6 / 24 * 24, // synodic rotation ~58.6 Earth days (kept as hours)
+            year_days: 87.97,
+            mean_temp_C: 167,
+            moons: 0,
+            atmosphere: "Trace (Na, O, He)",
+            notes: "Closest planet to the Sun.",
+            missions: ["Mariner 10", "MESSENGER", "BepiColombo (en-route flybys)"]
+        }, {
+            id: "venus",
+            name: "Venus",
+            type: "terrestrial",
+            colorStops: ["#ffc78a", "#a8753a"],
+            distance_au: 0.723,
+            distance_km: 108200000,
+            diameter_km: 12104,
+            mass_kg: "4.87×10^24",
+            gravity_mps2: 8.87,
+            day_hours: 5832,
+            year_days: 224.7,
+            mean_temp_C: 464,
+            moons: 0,
+            atmosphere: "CO₂ (~96%), N₂ (~3.5%), thick clouds of H₂SO₄",
+            notes: "Runaway greenhouse; surface pressure ~92× Earth.",
+            missions: ["Venera program", "Magellan", "Akatsuki", "Venus Express"]
+        }, {
+            id: "earth",
+            name: "Earth",
+            type: "terrestrial",
+            colorStops: ["#3fb9ff", "#004aa4"],
+            distance_au: 1.0,
+            distance_km: 149597870,
+            diameter_km: 12756,
+            mass_kg: "5.97×10^24",
+            gravity_mps2: 9.81,
+            day_hours: 24,
+            year_days: 365.25,
+            mean_temp_C: 15,
+            moons: 1,
+            atmosphere: "N₂ (~78%), O₂ (~21%), Ar, CO₂, trace gases",
+            notes: "Liquid water oceans and life.",
+            missions: ["Apollo (Moon)", "ISS (Low Earth Orbit)", "JWST (Sun–Earth L2)"]
+        }, {
+            id: "mars",
+            name: "Mars",
+            type: "terrestrial",
+            colorStops: ["#ff7a4d", "#8a3b21"],
+            distance_au: 1.524,
+            distance_km: 227900000,
+            diameter_km: 6792,
+            mass_kg: "6.42×10^23",
+            gravity_mps2: 3.71,
+            day_hours: 24.6,
+            year_days: 687,
+            mean_temp_C: -63,
+            moons: 2,
+            atmosphere: "CO₂ (~95%), N₂, Ar; thin",
+            notes: "Home to Olympus Mons & Valles Marineris.",
+            missions: ["Viking 1/2", "Pathfinder", "Curiosity", "Perseverance", "InSight", "MAVEN", "Mars Express", "Tianwen-1"]
+        }, {
+            id: "jupiter",
+            name: "Jupiter",
+            type: "gas giant",
+            colorStops: ["#f7e2c2", "#b48a61"],
+            distance_au: 5.203,
+            distance_km: 778600000,
+            diameter_km: 142984,
+            mass_kg: "1.90×10^27",
+            gravity_mps2: 24.79,
+            day_hours: 9.9,
+            year_days: 4331,
+            mean_temp_C: -110,
+            moons: 90,
+            atmosphere: "H₂, He; clouds of NH₃ and H₂O",
+            notes: "Great Red Spot; strongest magnetic field of planets.",
+            missions: ["Pioneer 10/11", "Voyager 1/2", "Galileo", "Juno", "JUICE (ESA; Jupiter system)"]
+        }, {
+            id: "saturn",
+            name: "Saturn",
+            type: "gas giant",
+            colorStops: ["#ffe5a3", "#b08d51"],
+            distance_au: 9.539,
+            distance_km: 1433500000,
+            diameter_km: 120536,
+            mass_kg: "5.68×10^26",
+            gravity_mps2: 10.44,
+            day_hours: 10.7,
+            year_days: 10747,
+            mean_temp_C: -140,
+            moons: 80,
+            atmosphere: "H₂, He; rings of ice and rock",
+            notes: "Spectacular ring system; moon Titan has thick atmosphere.",
+            missions: ["Pioneer 11", "Voyager 1/2", "Cassini–Huygens", "Dragonfly (planned to Titan)"]
+        }, {
+            id: "uranus",
+            name: "Uranus",
+            type: "ice giant",
+            colorStops: ["#b7f3ff", "#44a8c7"],
+            distance_au: 19.19,
+            distance_km: 2872500000,
+            diameter_km: 51118,
+            mass_kg: "8.68×10^25",
+            gravity_mps2: 8.69,
+            day_hours: 17.2,
+            year_days: 30687,
+            mean_temp_C: -195,
+            moons: 27,
+            atmosphere: "H₂, He, CH₄ (gives blue-green color)",
+            notes: "Axial tilt ~98°, rotates on its side.",
+            missions: ["Voyager 2 flyby"]
+        }, {
+            id: "neptune",
+            name: "Neptune",
+            type: "ice giant",
+            colorStops: ["#9dd0ff", "#245bff"],
+            distance_au: 30.07,
+            distance_km: 4495100000,
+            diameter_km: 49528,
+            mass_kg: "1.02×10^26",
+            gravity_mps2: 11.15,
+            day_hours: 16.1,
+            year_days: 60190,
+            mean_temp_C: -200,
+            moons: 14,
+            atmosphere: "H₂, He, CH₄; high winds & storms",
+            notes: "Strongest winds in the Solar System.",
+            missions: ["Voyager 2 flyby", "Trident (concept)"]
+        }];
+
+        const MISSIONS = {
+            past: [{
+                name: "Voyager 1 & 2",
+                years: "1977–",
+                target: "Outer planets (Jupiter, Saturn; Uranus/Neptune flybys)",
+                highlight: "Grand Tour flybys, heliosphere exploration"
+            }, {
+                name: "Cassini–Huygens",
+                years: "1997–2017",
+                target: "Saturn & Titan",
+                highlight: "Long-term Saturn study; Huygens landed on Titan (2005)"
+            }, {
+                name: "Galileo",
+                years: "1989–2003",
+                target: "Jupiter",
+                highlight: "Jupiter orbiter; probe into atmosphere"
+            }, {
+                name: "New Horizons",
+                years: "2006–",
+                target: "Pluto & Kuiper Belt",
+                highlight: "First Pluto flyby (2015), Arrokoth (2019)"
+            }, {
+                name: "Viking 1/2",
+                years: "1975–1982",
+                target: "Mars",
+                highlight: "First successful Mars landers & experiments"
+            }, {
+                name: "MESSENGER",
+                years: "2004–2015",
+                target: "Mercury",
+                highlight: "First Mercury orbiter; global mapping"
+            }, {
+                name: "Magellan",
+                years: "1989–1994",
+                target: "Venus",
+                highlight: "Radar mapping through Venusian clouds"
+            }],
+            upcoming: [{
+                name: "Europa Clipper",
+                years: "Launch 2024; Jupiter system arrival ~2030",
+                target: "Europa (Jupiter)",
+                highlight: "Assess habitability; ice shell & ocean"
+            }, {
+                name: "JUICE (ESA)",
+                years: "Launched 2023; Jupiter system 2031",
+                target: "Jupiter, Ganymede",
+                highlight: "Icy moons; first Ganymede orbiter"
+            }, {
+                name: "Dragonfly",
+                years: "Planned late-2020s",
+                target: "Titan (Saturn)",
+                highlight: "Nuclear-powered rotorcraft to explore Titan"
+            }, {
+                name: "Mars Sample Return",
+                years: "Planned",
+                target: "Mars",
+                highlight: "Return cached samples from Perseverance (subject to redesign)"
+            }]
+        };
+
+        /* =========================================================
+           STARFIELD CANVAS
+           ========================================================= */
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d', {
+            alpha: false
+        });
+        let stars = [];
+
+        function resizeCanvas() {
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            canvas.width = Math.floor(innerWidth * dpr);
+            canvas.height = Math.floor(innerHeight * dpr);
+            canvas.style.width = innerWidth + 'px';
+            canvas.style.height = innerHeight + 'px';
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            makeStars();
+        }
+
+        function makeStars() {
+            const count = Math.floor(innerWidth * innerHeight / 2800);
+            stars = Array.from({
+                length: count
+            }, () => ({
+                x: Math.random() * innerWidth,
+                y: Math.random() * innerHeight,
+                r: Math.random() * 1.2 + 0.2,
+                a: Math.random() * 0.6 + 0.2,
+                s: Math.random() * 0.6 + 0.2
+            }));
+        }
+
+        function draw() {
+            ctx.fillStyle = '#050510';
+            ctx.fillRect(0, 0, innerWidth, innerHeight);
+            for (const st of stars) {
+                st.a += (Math.random() - 0.5) * 0.08; // subtle twinkle
+                st.a = Math.max(0.05, Math.min(0.9, st.a));
+                ctx.beginPath();
+                ctx.arc(st.x, st.y, st.r, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(230,245,255,${st.a})`;
+                ctx.fill();
+                // faint glow
+                ctx.beginPath();
+                ctx.arc(st.x, st.y, st.r * 2.2, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(0,217,255,${st.a*0.15})`;
+                ctx.fill();
+            }
+            requestAnimationFrame(draw);
+        }
+        resizeCanvas();
+        draw();
+        addEventListener('resize', resizeCanvas);
+
+        /* =========================================================
+           PLANETS RENDER
+           ========================================================= */
+        const planetGrid = document.getElementById('planetGrid');
+        const planetSearch = document.getElementById('planetSearch');
+        const typeFilter = document.getElementById('typeFilter');
+        const modal = document.getElementById('planetModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalTable = document.getElementById('modalTable');
+        const modalType = document.getElementById('modalType');
+        const modalMissions = document.getElementById('modalMissions');
+
+        function makePlanetIcon(stops) {
+            const [a, b] = stops;
+            return `background: radial-gradient(circle at 32% 28%, ${a}, ${b} 70%);`;
+        }
+
+        function renderPlanets() {
+            const q = planetSearch.value.trim().toLowerCase();
+            const type = typeFilter.value;
+            planetGrid.innerHTML = '';
+            const list = PLANETS.filter(p => {
+                const hit = (p.name.toLowerCase().includes(q) ||
+                    p.type.toLowerCase().includes(q) ||
+                    (p.notes && p.notes.toLowerCase().includes(q)));
+                const typeOk = !type || p.type === type;
+                return hit && typeOk;
+            });
+
+            list.forEach(p => {
+                const card = document.createElement('article');
+                card.className = 'planet-card';
+                card.setAttribute('role', 'listitem');
+                card.innerHTML = `
+      <div class="planet-head">
+        <div class="planet-icon" style="${makePlanetIcon(p.colorStops)}"></div>
+        <div>
+          <div class="planet-name">${p.name}</div>
+          <div class="subtle" style="font-size:13px">${p.type.replace(/\b\w/g, c=>c.toUpperCase())}</div>
+        </div>
+        <div style="margin-left:auto"><span class="pill">${p.distance_au} AU</span></div>
+      </div>
+      <div class="kv">
+        <div><b>Diameter</b>${p.diameter_km.toLocaleString()} km</div>
+        <div><b>Moons</b>${p.moons}</div>
+        <div><b>Gravity</b>${p.gravity_mps2} m/s²</div>
+        <div><b>Year</b>${p.year_days.toLocaleString()} Earth days</div>
+      </div>
+      <div class="subtle" style="margin-top:10px">${p.notes}</div>
+      <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap">
+        <button class="btn" data-id="${p.id}">Details</button>
+        <span class="pill">Mean temp ~ ${p.mean_temp_C}°C</span>
+      </div>
+    `;
+                planetGrid.appendChild(card);
+            });
+
+            // attach handlers
+            planetGrid.querySelectorAll('button.btn[data-id]').forEach(btn => {
+                btn.addEventListener('click', () => openPlanet(btn.getAttribute('data-id')));
+            });
+        }
+        renderPlanets();
+        planetSearch.addEventListener('input', renderPlanets);
+        typeFilter.addEventListener('change', renderPlanets);
+
+        function openPlanet(id) {
+            const p = PLANETS.find(x => x.id === id);
+            if (!p) return;
+            modalTitle.textContent = p.name;
+            modalType.textContent = p.type.toUpperCase();
+            // table
+            const rows = [
+                ['Distance from Sun', '~ ' + p.distance_km.toLocaleString() + ' km (' + p.distance_au + ' AU)'],
+                ['Diameter', '' + p.diameter_km.toLocaleString() + ' km'],
+                ['Mass', p.mass_kg + ' kg'],
+                ['Surface gravity', p.gravity_mps2 + ' m/s²'],
+                ['Length of day (rot.)', p.day_hours + ' hours'],
+                ['Orbital period (year)', p.year_days + ' Earth days'],
+                ['Mean temperature', p.mean_temp_C + ' °C'],
+                ['Moons', '' + p.moons],
+                ['Atmosphere', p.atmosphere],
+            ];
+            modalTable.innerHTML = `
+   <thead><tr><th>Property</th><th>Value</th></tr></thead>
+   <tbody>
+     ${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}
+   </tbody>`;
+  // missions
+  modalMissions.innerHTML = '';
+  (p.missions || []).forEach(m=>{
+    const li = document.createElement('li');
+    li.className = 'mission';
+    li.textContent = m;
+    modalMissions.appendChild(li);
+  });
+  modal.showModal();
+}
+
+/* =========================================================
+   MISSIONS RENDER
+   ========================================================= */
+function renderMissions(){
+  const past = document.getElementById('pastList');
+  const up = document.getElementById('upcomingList');
+  const mk = (m)=>`<li class="mission"><b>${m.name}</b> — <span class="subtle">${m.years}</span><br><span>${m.target}</span><br><span class="subtle">${m.highlight}</span></li>`;
+  past.innerHTML = MISSIONS.past.map(mk).join('');
+  up.innerHTML = MISSIONS.upcoming.map(mk).join('');
+}
+renderMissions();
+
+/* =========================================================
+   NICE LITTLE EXTRAS
+   ========================================================= */
+// Smooth anchor scrolling
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click', e=>{
+    const id = a.getAttribute('href').slice(1);
+    const el = document.getElementById(id);
+    if(el){ e.preventDefault(); el.scrollIntoView({behavior:'smooth', block:'start'}); }
+  });
+});
+    </script>
+</body>
+
+</html>
